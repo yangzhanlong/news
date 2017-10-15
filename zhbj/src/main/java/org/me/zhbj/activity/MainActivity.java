@@ -1,7 +1,9 @@
-package org.me.zhbj;
+package org.me.zhbj.activity;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+
+import org.me.zhbj.R;
 
 public class MainActivity extends AppCompatActivity {
 
