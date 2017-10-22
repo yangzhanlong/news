@@ -10,6 +10,9 @@ import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
 import org.me.zhbj.R;
 import org.me.zhbj.adapter.MainVPFragmentAdapter;
+import org.me.zhbj.base.BaseFragment;
+import org.me.zhbj.base.BaseLoadNetDataOperator;
+import org.me.zhbj.bean.NewsCenterBean;
 import org.me.zhbj.fragment.GovaffairsTabFragment;
 import org.me.zhbj.fragment.HomeTabFragment;
 import org.me.zhbj.fragment.NewsCenterTabFragment;
@@ -30,7 +33,8 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     RadioGroup rgTab;
 
     List<Fragment> fragments;
-    SlidingMenu slidingMenu;
+    public SlidingMenu slidingMenu;
+    private List<NewsCenterBean.NewsCenterMenuBean> newsCenterMenuBeanList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,5 +106,15 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
                 break;
         }
         tabVp.setCurrentItem(item, false);
+
+        //加载网络数据的入口
+        BaseFragment baseFragment = (BaseFragment) fragments.get(item);
+        if (baseFragment instanceof BaseLoadNetDataOperator) {
+            ((BaseLoadNetDataOperator) baseFragment).loadNetData();
+        }
+    }
+
+    public void setNewsCenterMenuBeanList(List<NewsCenterBean.NewsCenterMenuBean> data) {
+        this.newsCenterMenuBeanList = data;
     }
 }
