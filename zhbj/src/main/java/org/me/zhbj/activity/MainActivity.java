@@ -2,14 +2,18 @@ package org.me.zhbj.activity;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.Window;
 import android.widget.RadioGroup;
 
 import com.jeremyfeinstein.slidingmenu.lib.SlidingMenu;
 
 import org.me.zhbj.R;
 import org.me.zhbj.adapter.MainVPFragmentAdapter;
+import org.me.zhbj.adapter.MenuAdapter;
 import org.me.zhbj.base.BaseFragment;
 import org.me.zhbj.base.BaseLoadNetDataOperator;
 import org.me.zhbj.bean.NewsCenterBean;
@@ -25,7 +29,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
+public class MainActivity extends FragmentActivity implements RadioGroup.OnCheckedChangeListener {
 
     @BindView(R.id.tab_vp)
     ViewPager tabVp;
@@ -35,9 +39,18 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
     List<Fragment> fragments;
     public SlidingMenu slidingMenu;
     private List<NewsCenterBean.NewsCenterMenuBean> newsCenterMenuBeanList;
+    private MenuAdapter menuAdapter;
+    private RecyclerView rv;
+
+    // 侧滑菜单数据
+    public void setNewsCenterMenuBeanList(List<NewsCenterBean.NewsCenterMenuBean> data) {
+        this.newsCenterMenuBeanList = data;
+        menuAdapter.setNewsCenterMenuBeanList(data);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -50,6 +63,21 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
 
         // 初始化侧滑菜单
         initSlidingMenu();
+
+        // 初始化 menu 的 RecyclerView
+        initRecyclerView();
+    }
+
+    private void initRecyclerView() {
+        // 从 slidingMenu 找到 RecyclerView
+        rv = (RecyclerView) slidingMenu.findViewById(R.id.rv_menu);
+
+        // 设置布局管理
+        rv.setLayoutManager(new LinearLayoutManager(this));
+
+        // 创建适配器给RecyclerView进行数据绑定
+        menuAdapter = new MenuAdapter(this, null);
+        rv.setAdapter(menuAdapter);
     }
 
     private void initSlidingMenu() {
@@ -114,7 +142,10 @@ public class MainActivity extends AppCompatActivity implements RadioGroup.OnChec
         }
     }
 
-    public void setNewsCenterMenuBeanList(List<NewsCenterBean.NewsCenterMenuBean> data) {
-        this.newsCenterMenuBeanList = data;
+    // 获取当前tab选中的fragment
+    public BaseFragment getCurrentFragment(){
+        int currentItem = tabVp.getCurrentItem();
+        BaseFragment baseFragment = (BaseFragment) fragments.get(currentItem);
+        return baseFragment;
     }
 }
