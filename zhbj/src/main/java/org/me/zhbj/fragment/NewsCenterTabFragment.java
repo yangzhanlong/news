@@ -1,14 +1,11 @@
 package org.me.zhbj.fragment;
 
 
-import android.graphics.Color;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -21,7 +18,9 @@ import org.me.zhbj.activity.MainActivity;
 import org.me.zhbj.adapter.NewsCenterTabVPAdapter;
 import org.me.zhbj.base.BaseFragment;
 import org.me.zhbj.base.BaseLoadNetDataOperator;
+import org.me.zhbj.base.NewsCenterContentTabPager;
 import org.me.zhbj.bean.NewsCenterBean;
+import org.me.zhbj.bean.NewsChannelBean;
 import org.me.zhbj.uttils.Constant;
 import org.me.zhbj.uttils.MyLogger;
 
@@ -37,7 +36,8 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
     private ImageButton imageButton;
     private ViewPager viewPager;
 
-    private List<View> views;
+    private List<NewsCenterContentTabPager> views;
+    private NewsChannelBean newsChannelBean;
 
     @Override
     public void initTitle() {
@@ -60,7 +60,7 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
                 int item = viewPager.getCurrentItem();
 
                 // 下标没有到最后，都切换到下一个tab页面
-                if (item != newsCenterBean.data.get(0).children.size() -1) {
+                if (item != newsChannelBean.result.size() -1) {
                     viewPager.setCurrentItem(item + 1);
                 }
             }
@@ -73,17 +73,13 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
 
     private void initViewPager() {
         views = new ArrayList<>();
-        for (NewsCenterBean.NewsCenterNewsTabBean tabBead : newsCenterBean.data.get(0).children) {
-            TextView tv = new TextView(getContext());
-            tv.setText(tabBead.title);
-            tv.setTextColor(Color.RED);
-            tv.setTextSize(20);
-            tv.setGravity(Gravity.CENTER);
-            views.add(tv);
+        for (int i = 0 ; i < newsChannelBean.result.size(); i++) {
+            NewsCenterContentTabPager tabPager = new NewsCenterContentTabPager(getContext());
+            views.add(tabPager);
         }
 
         // 设置适配器
-        viewPager.setAdapter(new NewsCenterTabVPAdapter(views, newsCenterBean.data.get(0).children));
+        viewPager.setAdapter(new NewsCenterTabVPAdapter(views, newsCenterBean.data.get(0).children, newsChannelBean.result));
 
         // 绑定 tabPageIndicator 和 viewPager
         tabPageIndicator.setViewPager(viewPager);
@@ -92,6 +88,7 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
     // 加载网络数据
     @Override
     public void loadNetData() {
+        final String channel_url = Constant.CHANNEL_URL + Constant.APPKEY;
         final String url = Constant.NEWSCENTER_URL;
         OkHttpUtils.get()
                 .url(url)
@@ -108,6 +105,27 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
                         Toast.makeText(getContext(), "获取新闻中心数据失败", Toast.LENGTH_SHORT).show();
                     }
                 });
+
+
+
+        OkHttpUtils.get()
+                .url(channel_url)
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Toast.makeText(getContext(), "获取新闻标题数据失败", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+                        MyLogger.i(TAG,response);
+                        //把response  == json 转换成对应的数据模型
+                        processChannelData(response);
+                    }
+                });
+
+
     }
 
     //把Json格式的字符串转换成对应的模型对象
@@ -116,6 +134,11 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
         newsCenterBean = gson.fromJson(json, NewsCenterBean.class);
         //把数据传递给MainActivity
         ((MainActivity)getActivity()).setNewsCenterMenuBeanList(newsCenterBean.data);
+    }
+
+    public void processChannelData(String json) {
+        Gson gson = new Gson();
+        newsChannelBean = gson.fromJson(json, NewsChannelBean.class);
 
         // 创建布局
         View view = createContent();
