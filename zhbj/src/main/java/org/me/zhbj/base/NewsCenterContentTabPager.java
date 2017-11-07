@@ -1,6 +1,7 @@
 package org.me.zhbj.base;
 
 import android.content.Context;
+import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.text.TextUtils;
 import android.view.View;
@@ -52,6 +53,44 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     private NewsChannelContentBean newsChannelContentBean;
     private NewsChannelDatasBean newsChannelDatasBean;
     private ArrayList<String> titles;
+
+    // 处理轮播图自动切换 (消息机制)
+    private Handler mHandler = new Handler();
+    // 判断是否在切换
+    private boolean hasSwitch;
+
+    // 切换任务
+    private class SwitchTask implements Runnable {
+
+        @Override
+        public void run() {
+            int currentItem = vpSwitchImage.getCurrentItem();
+
+            // 判断是否是最后一页
+            if (currentItem == imaeViews.size() - 1) {
+                currentItem = 0;
+            } else {
+                currentItem++;
+            }
+            vpSwitchImage.setCurrentItem(currentItem);
+            mHandler.postDelayed(this, 3000);
+        }
+    }
+
+    // 开始切换
+    public void startSwitch() {
+        if (!hasSwitch) {
+            // 向 handler 发送一个延时的消息
+            mHandler.postDelayed(new SwitchTask(), 3000);
+        }
+    }
+
+    // 停止切换
+    public void stopSwitch() {
+        // 清空消息队列
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
 
     public NewsCenterContentTabPager(Context context) {
         this.context = context;
@@ -135,7 +174,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         String json = gson.toJson(newsChannelContentBean.result);
         JSONObject jsonObject = new JSONObject(json);
         JSONArray array =  jsonObject.getJSONArray("list");
-        MyLogger.i(TAG, jsonObject.getJSONArray("list").toString());
+        //MyLogger.i(TAG, jsonObject.getJSONArray("list").toString());
 
         for (int i = 0; i < array.length(); i++) {
             if (i == 3) {
@@ -144,7 +183,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
             String pic = (String) array.getJSONObject(i).get("pic");
             String title = (String) array.getJSONObject(i).get("title");
-            MyLogger.i(TAG, title);
+            //MyLogger.i(TAG, title);
             if (!TextUtils.isEmpty(pic)) {
                 ImageView iv = new ImageView(context);
                 //iv.setScaleType(ImageView.ScaleType.FIT_XY);

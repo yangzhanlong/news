@@ -29,7 +29,7 @@ import java.util.List;
 
 import okhttp3.Call;
 
-public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDataOperator{
+public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDataOperator, ViewPager.OnPageChangeListener {
     private static final String TAG = "NewsCenterFragment";
     private NewsCenterBean newsCenterBean;
     private TabPageIndicator tabPageIndicator;
@@ -83,6 +83,13 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
 
         // 绑定 tabPageIndicator 和 viewPager
         tabPageIndicator.setViewPager(viewPager);
+
+        // 让第一个子 tab 开始轮播切换
+        views.get(0).startSwitch();
+
+        // 给 ViewPager设置切换监听
+        // 注意；ViewPager 和 tabPageIndicator 配合使用，监听只能使用tabPageIndicator
+        tabPageIndicator.setOnPageChangeListener(this);
     }
 
     // 加载网络数据
@@ -145,5 +152,29 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
 
         // 加载布局
         addView(view);
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    // 当前选中的新闻中心子tab
+    @Override
+    public void onPageSelected(int position) {
+        // 当前的tab开始切换，其他的tab停止切换
+        for (int i = 0; i < views.size(); i++) {
+            NewsCenterContentTabPager tabPager = views.get(i);
+            if (position == i) {
+                tabPager.startSwitch();
+            } else {
+                tabPager.stopSwitch();
+            }
+        }
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
     }
 }
