@@ -7,11 +7,11 @@
         android:layout_width="match_parent"
         android:layout_height="200dp">
 
-        <android.support.v4.view.ViewPager
+        <org.me.zhbj.view.SwitchImageViewPager
             android:id="@+id/vp_switch_image"
             android:layout_width="match_parent"
             android:layout_height="200dp">
-        </android.support.v4.view.ViewPager>
+        </org.me.zhbj.view.SwitchImageViewPager>
 
         <RelativeLayout
             android:layout_width="match_parent"

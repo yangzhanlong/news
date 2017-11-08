@@ -24,6 +24,7 @@ import org.me.zhbj.bean.NewsCenterTabBean;
 import org.me.zhbj.bean.NewsChannelContentBean;
 import org.me.zhbj.bean.NewsChannelDatasBean;
 import org.me.zhbj.uttils.MyLogger;
+import org.me.zhbj.view.SwitchImageViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +42,7 @@ import okhttp3.Call;
 public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener {
     private static final String TAG = "NewsCenterContentTabPager";
     @BindView(R.id.vp_switch_image)
-    ViewPager vpSwitchImage;
+    SwitchImageViewPager vpSwitchImage;
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.ll_point_container)
@@ -89,6 +90,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     public void stopSwitch() {
         // 清空消息队列
         mHandler.removeCallbacksAndMessages(null);
+        hasSwitch = false;
     }
 
 
@@ -99,7 +101,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
     private View initView() {
         View view = View.inflate(context, R.layout.newscenter_content_tab, null);
-        vpSwitchImage = (ViewPager) view.findViewById(R.id.vp_switch_image);
+        vpSwitchImage = (SwitchImageViewPager) view.findViewById(R.id.vp_switch_image);
         tvTitle = (TextView) view.findViewById(R.id.tv_title);
         llPointContainer = (LinearLayout) view.findViewById(R.id.ll_point_container);
         ButterKnife.bind(view);
@@ -136,6 +138,9 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
         // 把数据绑定给对应的控件
         bindDataToView();
+
+        // 把当前 NewsCenterContentTabPager 对象传递给 SwitchImageViewPager
+        vpSwitchImage.setTabPager(this);
     }
 
     // 绑定数据给控件
