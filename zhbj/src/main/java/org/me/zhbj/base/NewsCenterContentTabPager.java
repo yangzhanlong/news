@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -27,13 +26,13 @@ import org.me.zhbj.bean.NewsCenterTabBean;
 import org.me.zhbj.bean.NewsChannelContentBean;
 import org.me.zhbj.bean.NewsChannelDatasBean;
 import org.me.zhbj.uttils.MyLogger;
+import org.me.zhbj.view.RefreshRecyclerView;
 import org.me.zhbj.view.SimpleDividerItemDecoration;
 import org.me.zhbj.view.SwitchImageViewPager;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 import okhttp3.Call;
 
@@ -45,11 +44,11 @@ import okhttp3.Call;
 
 public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener {
     private static final String TAG = "NewsCenterContentTabPager";
-    @BindView(R.id.vp_switch_image)
+    //@BindView(R.id.vp_switch_image)
     SwitchImageViewPager vpSwitchImage;
-    @BindView(R.id.tv_title)
+    //@BindView(R.id.tv_title)
     TextView tvTitle;
-    @BindView(R.id.ll_point_container)
+    //@BindView(R.id.ll_point_container)
     LinearLayout llPointContainer;
     private Context context;
     public View view;
@@ -63,7 +62,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     private Handler mHandler = new Handler();
     // 判断是否在切换
     private boolean hasSwitch;
-    private RecyclerView rv_news;
+    private RefreshRecyclerView rv_news;
 
     // 切换任务
     private class SwitchTask implements Runnable {
@@ -109,10 +108,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
     private View initView() {
         View view = View.inflate(context, R.layout.newscenter_content_tab, null);
-        vpSwitchImage = (SwitchImageViewPager) view.findViewById(R.id.vp_switch_image);
-        tvTitle = (TextView) view.findViewById(R.id.tv_title);
-        llPointContainer = (LinearLayout) view.findViewById(R.id.ll_point_container);
-        rv_news = (RecyclerView) view.findViewById(R.id.rv_news);
+        rv_news = (RefreshRecyclerView) view.findViewById(R.id.rv_news);
         ButterKnife.bind(view);
         return view;
     }
@@ -154,9 +150,21 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
     // 绑定数据给控件
     private void bindDataToView() throws JSONException {
+        loadSwitchImageLayout();
         initSwitchImageView();
         initPoint();
         initRVNews();
+    }
+
+    // 动态加载轮播图的布局
+    private void loadSwitchImageLayout() {
+        View view = View.inflate(context, R.layout.switch_image_view, null);
+        // 动态加载不能使用 ButterKnife
+        // ButterKnife.bind(this, view);
+        vpSwitchImage = (SwitchImageViewPager) view.findViewById(R.id.vp_switch_image);
+        tvTitle = (TextView) view.findViewById(R.id.tv_title);
+        llPointContainer = (LinearLayout) view.findViewById(R.id.ll_point_container);
+        rv_news.addSwitchImageView(view);
     }
 
     private void initRVNews() {
