@@ -154,7 +154,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         // 清空容器里面的布局
         llPointContainer.removeAllViews();
 
-        for (int i = 0; i < imaeViews.size(); i++) {
+        for (int i = 0; i < imaeViews.size() - 2; i++) {
             // 小圆点
             View view = new View(context);
             // 设置背景颜色
@@ -179,25 +179,43 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         String json = gson.toJson(newsChannelContentBean.result);
         JSONObject jsonObject = new JSONObject(json);
         JSONArray array =  jsonObject.getJSONArray("list");
-        //MyLogger.i(TAG, jsonObject.getJSONArray("list").toString());
 
+        ArrayList<String> pics = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
             if (i == 3) {
                 break;
             }
 
-            String pic = (String) array.getJSONObject(i).get("pic");
-            String title = (String) array.getJSONObject(i).get("title");
-            //MyLogger.i(TAG, title);
+            String pic, title;
+            pic = (String) array.getJSONObject(i).get("pic");
+            title = (String) array.getJSONObject(i).get("title");
+
             if (!TextUtils.isEmpty(pic)) {
+                pics.add(pic);
                 ImageView iv = new ImageView(context);
                 //iv.setScaleType(ImageView.ScaleType.FIT_XY);
                 iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 Picasso.with(context).load(pic).into(iv);
                 imaeViews.add(iv);
-
                 titles.add(title);
             }
+        }
+
+        // 在轮播图的前后添加多一张图片 (实现无限循环)
+        // 在开始添加一个页面
+        {
+            ImageView iv = new ImageView(context);
+            iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            Picasso.with(context).load(pics.get(pics.size() - 1)).into(iv);
+            imaeViews.add(0, iv);
+        }
+
+        // 在最后添加一个页面
+        {
+            ImageView iv = new ImageView(context);
+            iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            Picasso.with(context).load(pics.get(0)).into(iv);
+            imaeViews.add(imaeViews.size(), iv);
         }
 
         // 设置适配器
@@ -206,6 +224,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
         tvTitle.setText(titles.get(0));
         vpSwitchImage.addOnPageChangeListener(this);
+        vpSwitchImage.setCurrentItem(1, false);
     }
 
     @Override
@@ -216,15 +235,28 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     // 页面被选中
     @Override
     public void onPageSelected(int position) {
+        // 真实下标
+        int pageIndex = 0;
+
+        if (position == 0) {
+            pageIndex = titles.size() - 1;
+            vpSwitchImage.setCurrentItem(titles.size(), false);
+        } else if (position == titles.size() + 1) {
+            pageIndex = 0;
+            vpSwitchImage.setCurrentItem(1, false);
+        } else {
+            pageIndex = position - 1;
+        }
+
         // 设置轮播图的文字显示
-        tvTitle.setText(titles.get(position));
+        tvTitle.setText(titles.get(pageIndex));
 
         // 设置轮播图的点的背景颜色
         int childCount = llPointContainer.getChildCount();
         for (int i = 0; i < childCount; i++) {
             View child = llPointContainer.getChildAt(i);
             // 切换的图片跟位置一样
-            if (position == i) {
+            if (pageIndex == i) {
                 child.setBackgroundResource(R.drawable.point_red_bg);
             } else {
                 child.setBackgroundResource(R.drawable.point_gray_bg);
