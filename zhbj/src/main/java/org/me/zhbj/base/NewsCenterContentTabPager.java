@@ -69,9 +69,8 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
         @Override
         public void run() {
-            int currentItem = vpSwitchImage.getCurrentItem();
-
             if (imaeViews != null){
+                int currentItem = vpSwitchImage.getCurrentItem();
                 // 判断是否是最后一页
                 if (currentItem == imaeViews.size() - 1) {
                     currentItem = 0;
