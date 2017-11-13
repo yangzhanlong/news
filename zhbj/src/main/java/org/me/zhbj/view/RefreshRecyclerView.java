@@ -8,6 +8,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -40,6 +42,18 @@ public class RefreshRecyclerView extends RecyclerView {
     private int mFooterMeasureHeight;
     private int mHeaderMeasureHeight;
 
+    // 头的状态
+    private int mHeaderState = DOWN_REFRESH_STATE;
+
+    // 下拉刷新
+    private final static int DOWN_REFRESH_STATE = 0;
+    // 释放刷新
+    private final static int RELEASE_REFRESH_STATE = 1;
+    // 正在刷新
+    private final static int REFRESHING_STATE = 2;
+    private Animation animation1;
+    private Animation animation2;
+
     public RefreshRecyclerView(Context context) {
         this(context, null);
     }
@@ -57,6 +71,29 @@ public class RefreshRecyclerView extends RecyclerView {
     private void init() {
         initHeaderView();
         initFootView();
+        initAnimation();
+    }
+
+    // 初始化动画
+    private void initAnimation() {
+        animation1 = createAnimation1();
+        animation2 = createAnimation2();
+    }
+
+    private Animation createAnimation1() {
+        Animation animation = new RotateAnimation(
+                0, -180, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        animation.setDuration(200);
+        animation.setFillAfter(true);
+        return animation;
+    }
+
+    private Animation createAnimation2() {
+        Animation animation = new RotateAnimation(
+                -180, -360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        animation.setDuration(200);
+        animation.setFillAfter(true);
+        return animation;
     }
 
     // 初始化头
@@ -119,8 +156,22 @@ public class RefreshRecyclerView extends RecyclerView {
                 // 获取显示在屏幕的第一个条目
                 int position = lm.findFirstVisibleItemPosition();
                 // 头部的高度(随着往下拉，高度不断变大)
-                int top = -mHeaderMeasureHeight + (moveY - downY);
-                if (position == 0 && moveY > downY) {
+                int diaY = moveY - downY;
+                int top = -mHeaderMeasureHeight + diaY;
+                if (position == 0 && diaY > 0) {
+                    // 切换头的状态
+                    if (mHeaderState == DOWN_REFRESH_STATE && top >= 0) {
+                        // 由下拉刷新变为释放刷新
+                        mHeaderState = RELEASE_REFRESH_STATE;
+                        tvState.setText("释放刷新");
+                        // 执行动画
+                        ivArrow.startAnimation(animation1);
+                    } else if (mHeaderState == RELEASE_REFRESH_STATE && top < 0) {
+                        mHeaderState = DOWN_REFRESH_STATE;
+                        tvState.setText("下拉刷新");
+                        ivArrow.startAnimation(animation2);
+                    }
+                    // 执行头的显示和隐藏
                     defaultHeader.setPadding(0, top, 0, 0);
                 }
 
