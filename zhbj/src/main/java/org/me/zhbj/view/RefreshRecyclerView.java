@@ -2,8 +2,10 @@ package org.me.zhbj.view;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -90,5 +92,42 @@ public class RefreshRecyclerView extends RecyclerView {
     // 添加轮播图的方法
     public void addSwitchImageView(View view) {
         mHeaderView.addView(view);
+    }
+
+    // 重写setLayoutManager, 获取布局管理器对象
+    private LinearLayoutManager lm;
+    @Override
+    public void setLayoutManager(LayoutManager layout) {
+        super.setLayoutManager(layout);
+        lm = (LinearLayoutManager) layout;
+    }
+
+    // 记录按下的位置 (只记录垂直方向)
+    private int downY;
+
+    // 分发事件
+    // 没有用 onTouchEvent，因为 dispatchTouchEvent 回答的频率高一些
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                downY = (int) ev.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                int moveY = (int) ev.getY();
+
+                // 获取显示在屏幕的第一个条目
+                int position = lm.findFirstVisibleItemPosition();
+                // 头部的高度(随着往下拉，高度不断变大)
+                int top = -mHeaderMeasureHeight + (moveY - downY);
+                if (position == 0 && moveY > downY) {
+                    defaultHeader.setPadding(0, top, 0, 0);
+                }
+
+                break;
+            case MotionEvent.ACTION_UP:
+                break;
+        }
+        return super.dispatchTouchEvent(ev);
     }
 }
