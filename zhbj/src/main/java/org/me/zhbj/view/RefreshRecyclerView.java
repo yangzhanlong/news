@@ -141,6 +141,7 @@ public class RefreshRecyclerView extends RecyclerView {
 
     // 记录按下的位置 (只记录垂直方向)
     private int downY;
+    private int diaY;
 
     // 分发事件
     // 没有用 onTouchEvent，因为 dispatchTouchEvent 回答的频率高一些
@@ -156,7 +157,7 @@ public class RefreshRecyclerView extends RecyclerView {
                 // 获取显示在屏幕的第一个条目
                 int position = lm.findFirstVisibleItemPosition();
                 // 头部的高度(随着往下拉，高度不断变大)
-                int diaY = moveY - downY;
+                diaY = moveY - downY;
                 int top = -mHeaderMeasureHeight + diaY;
                 if (position == 0 && diaY > 0) {
                     // 切换头的状态
@@ -176,7 +177,30 @@ public class RefreshRecyclerView extends RecyclerView {
                 }
 
                 break;
-            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_UP: // 弹起
+            case MotionEvent.ACTION_CANCEL: // 事件取消
+            case MotionEvent.ACTION_OUTSIDE: // 外部点击
+                int firstVisibleItemPosition = lm.findFirstVisibleItemPosition();
+                if (firstVisibleItemPosition == 0 && diaY > 0) {
+                    if (mHeaderState == DOWN_REFRESH_STATE) {
+                        // 隐藏头
+                        defaultHeader.setPadding(0, -mHeaderMeasureHeight, 0 ,0);
+                    } else if (mHeaderState == RELEASE_REFRESH_STATE) {
+                        // 把状态切换为正在加载
+                        mHeaderState = REFRESHING_STATE;
+                        // 把头缩回至本身头的位置
+                        defaultHeader.setPadding(0, 0, 0, 0);
+                        // 清除动画
+                        ivArrow.clearAnimation();
+                        // 隐藏箭头，显示进度条
+                        ivArrow.setVisibility(View.INVISIBLE);
+                        pb.setVisibility(View.VISIBLE);
+                        // 加载最新的数据
+                    }
+                }
+
+
+
                 break;
         }
         return super.dispatchTouchEvent(ev);
