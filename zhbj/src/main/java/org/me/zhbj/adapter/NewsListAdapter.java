@@ -49,6 +49,7 @@ public class NewsListAdapter extends RecyclerView.Adapter {
         String pic = null;
         String title = null;
         String time = null;
+
         try {
             pic = (String) data.getJSONObject(position).get("pic");
             title = (String) data.getJSONObject(position).get("title");
@@ -66,7 +67,7 @@ public class NewsListAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return data != null ? data.length() : 0;
+        return data != null ? data.length() - 1 : 0;
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder{
@@ -95,5 +96,11 @@ public class NewsListAdapter extends RecyclerView.Adapter {
         }
 
         return array;
+    }
+
+    public void addData(JSONArray array) throws JSONException {
+        for (int i = 0; i < array.length(); i++) {
+            data.put(array.getJSONObject(i));
+        }
     }
 }

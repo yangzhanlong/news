@@ -25,6 +25,8 @@ import org.me.zhbj.adapter.SwitchImageVPAdapter;
 import org.me.zhbj.bean.NewsCenterTabBean;
 import org.me.zhbj.bean.NewsChannelContentBean;
 import org.me.zhbj.bean.NewsChannelDatasBean;
+import org.me.zhbj.fragment.NewsCenterTabFragment;
+import org.me.zhbj.uttils.Constant;
 import org.me.zhbj.uttils.MyLogger;
 import org.me.zhbj.view.RefreshRecyclerView;
 import org.me.zhbj.view.SimpleDividerItemDecoration;
@@ -42,7 +44,7 @@ import okhttp3.Call;
  * 新闻中心内容tab页面
  */
 
-public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener {
+public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener, RefreshRecyclerView.OnRefreshListener, RefreshRecyclerView.OnLoadMoreListener {
     private static final String TAG = "NewsCenterContentTabPager";
     //@BindView(R.id.vp_switch_image)
     SwitchImageViewPager vpSwitchImage;
@@ -58,11 +60,14 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     private NewsChannelDatasBean newsChannelDatasBean;
     private ArrayList<String> titles;
 
+    private NewsCenterTabFragment newsCenterTabFragment;
+
     // 处理轮播图自动切换 (消息机制)
     private Handler mHandler = new Handler();
     // 判断是否在切换
     private boolean hasSwitch;
     private RefreshRecyclerView rv_news;
+    private NewsListAdapter adapter;
 
     // 切换任务
     private class SwitchTask implements Runnable {
@@ -100,8 +105,9 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     }
 
 
-    public NewsCenterContentTabPager(Context context) {
+    public NewsCenterContentTabPager(Context context, NewsCenterTabFragment newsCenterTabFragment) {
         this.context = context;
+        this.newsCenterTabFragment = newsCenterTabFragment;
         view = initView();
     }
 
@@ -137,6 +143,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
     // 把json字符串转换成对应的数据模型
     private void processData(String json) throws JSONException {
+        rv_news.removeAllViews();
         Gson gson = new Gson();
         newsChannelContentBean = gson.fromJson(json, NewsChannelContentBean.class);
 
@@ -163,6 +170,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         vpSwitchImage = (SwitchImageViewPager) view.findViewById(R.id.vp_switch_image);
         tvTitle = (TextView) view.findViewById(R.id.tv_title);
         llPointContainer = (LinearLayout) view.findViewById(R.id.ll_point_container);
+        rv_news.removeSwitchImageView();
         rv_news.addSwitchImageView(view);
     }
 
@@ -172,8 +180,11 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         // 设置条目分割线
         rv_news.addItemDecoration(new SimpleDividerItemDecoration(context));
         // 设置数据  RevyclerView Adapter  ViewHolder
-        NewsListAdapter adapter = new NewsListAdapter(context, newsChannelContentBean);
+        adapter = new NewsListAdapter(context, newsChannelContentBean);
         rv_news.setAdapter(adapter);
+        // 设置下拉刷新的监听
+        rv_news.setOnRefreshListener(this);
+        rv_news.setOnLoadMoreListener(this);
     }
 
     // 初始化点
@@ -294,5 +305,82 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     @Override
     public void onPageScrollStateChanged(int state) {
 
+    }
+
+    // 下拉加载数据
+    @Override
+    public void onRefresh() {
+        int position = newsCenterTabFragment.get_index_of_viewPager();
+        List<String> channelList = newsCenterTabFragment.newsChannelBean.result;
+        String url = Constant.NEWS_URL + "?channel="
+                + channelList.get(position)
+                + "&start=" + Constant.START
+                + "&num=" + Constant.NUM
+                + "&appkey=" + Constant.APPKEY;
+
+        OkHttpUtils.get()
+                .url(url)
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Toast.makeText(context, "联网获取数据失败", Toast.LENGTH_SHORT).show();
+                        // 隐藏头
+                        rv_news.hideHeaderView(false);
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+                        try {
+                            processData(response);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        // 隐藏头
+                        rv_news.hideHeaderView(true);
+                    }
+                });
+    }
+
+    private int mStart = 0;
+    // 加载更多数据
+    @Override
+    public void onLoadMore() {
+        mStart += 10;
+        int position = newsCenterTabFragment.get_index_of_viewPager();
+        List<String> channelList = newsCenterTabFragment.newsChannelBean.result;
+        String url = Constant.NEWS_URL + "?channel="
+                + channelList.get(position)
+                + "&start=" + mStart
+                + "&num=" + Constant.NUM
+                + "&appkey=" + Constant.APPKEY;
+
+        OkHttpUtils.get()
+                .url(url)
+                .build()
+                .execute(new StringCallback() {
+                    @Override
+                    public void onError(Call call, Exception e, int id) {
+                        Toast.makeText(context, "联网获取数据失败", Toast.LENGTH_SHORT).show();
+                        // 隐藏头
+                        rv_news.hideFooterView();
+                    }
+
+                    @Override
+                    public void onResponse(String response, int id) {
+                        try {
+                            Gson gson = new Gson();
+                            newsChannelContentBean = gson.fromJson(response, NewsChannelContentBean.class);
+                            String json = gson.toJson(newsChannelContentBean.result);
+                            JSONObject jsonObject = new JSONObject(json);
+                            JSONArray array = jsonObject.getJSONArray("list");
+                            adapter.addData(array);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        // 隐藏头
+                        rv_news.hideFooterView();
+                    }
+                });
     }
 }

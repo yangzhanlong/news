@@ -37,13 +37,17 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
     private ViewPager viewPager;
 
     private List<NewsCenterContentTabPager> views;
-    private NewsChannelBean newsChannelBean;
+    public NewsChannelBean newsChannelBean;
 
     @Override
     public void initTitle() {
         setIbMenuDisplayState(true);
         setIbPicTypeDisplayState(false);
         setTitle("新闻");
+    }
+
+    public int get_index_of_viewPager() {
+        return viewPager.getCurrentItem();
     }
 
     @Override
@@ -74,7 +78,7 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
     private void initViewPager() {
         views = new ArrayList<>();
         for (int i = 0 ; i < newsChannelBean.result.size(); i++) {
-            NewsCenterContentTabPager tabPager = new NewsCenterContentTabPager(getContext());
+            NewsCenterContentTabPager tabPager = new NewsCenterContentTabPager(getContext(), this);
             views.add(tabPager);
         }
 
@@ -100,6 +104,7 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
         OkHttpUtils.get()
                 .url(url)
                 .build()
+                .connTimeOut(5000)
                 .execute(new StringCallback() {
                     @Override
                     public void onResponse(String response, int id) {
