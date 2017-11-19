@@ -11,7 +11,9 @@ import android.widget.TextView;
 
 import org.me.zhbj.R;
 import org.me.zhbj.activity.MainActivity;
+import org.me.zhbj.base.BaseFragment;
 import org.me.zhbj.bean.NewsCenterBean;
+import org.me.zhbj.fragment.NewsCenterTabFragment;
 
 import java.util.List;
 
@@ -70,7 +72,13 @@ public class MenuAdapter extends RecyclerView.Adapter {
                     selectedPosition = position;
                     notifyDataSetChanged();
                     // 修改 fragment 标题
-                    ((MainActivity)context).getCurrentFragment().setTitle(newsCenterMenuBean.title);
+                    BaseFragment baseFragment = ((MainActivity)context).getCurrentFragment();
+                    baseFragment.setTitle(newsCenterMenuBean.title);
+
+                    if (baseFragment instanceof NewsCenterTabFragment) {
+                        NewsCenterTabFragment newsCenterTabFragment = (NewsCenterTabFragment) baseFragment;
+                        newsCenterTabFragment.switchContent(position);
+                    }
                 }
 
                 // 选中后关闭侧滑菜单

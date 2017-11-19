@@ -25,7 +25,9 @@ import org.me.zhbj.uttils.Constant;
 import org.me.zhbj.uttils.MyLogger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Call;
 
@@ -38,6 +40,8 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
 
     private List<NewsCenterContentTabPager> views;
     public NewsChannelBean newsChannelBean;
+
+    private Map<Integer, View> viewMap = new HashMap<>();
 
     @Override
     public void initTitle() {
@@ -157,6 +161,9 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
 
         // 加载布局
         addView(view);
+
+        // 把布局添加到缓存View
+        viewMap.put(0, view);
     }
 
     @Override
@@ -181,5 +188,25 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
     @Override
     public void onPageScrollStateChanged(int state) {
 
+    }
+
+    // 切换Menu标题, 选择对应的内容
+    public void switchContent(int position) {
+        switch (position) {
+            case 2: // 组图
+                ibPicType.setVisibility(View.VISIBLE);
+                break;
+            default:
+                ibPicType.setVisibility(View.GONE);
+        }
+
+        // 从缓存View中获取view
+        View view = viewMap.get(position);
+        if (view == null) {
+            // 创建内容
+            container.removeAllViews();
+        } else {
+            addView(view);
+        }
     }
 }

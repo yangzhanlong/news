@@ -24,9 +24,9 @@ public abstract class BaseFragment extends Fragment {
     @BindView(R.id.tv_title)
     TextView tvTitle;
     @BindView(R.id.ib_pic_type)
-    ImageView ibPicType;
+    public ImageView ibPicType;
     @BindView(R.id.container)
-    FrameLayout container;
+    public FrameLayout container;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -74,4 +74,6 @@ public abstract class BaseFragment extends Fragment {
     public void onViewClicked() {
         ((MainActivity)getActivity()).slidingMenu.toggle();
     }
+
+
 }
