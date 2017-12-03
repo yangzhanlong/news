@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,11 +26,13 @@ import org.me.zhbj.bean.NewsCenterTabBean;
 import org.me.zhbj.bean.NewsChannelContentBean;
 import org.me.zhbj.bean.NewsChannelDatasBean;
 import org.me.zhbj.fragment.NewsCenterTabFragment;
+import org.me.zhbj.uttils.CacheUtils;
 import org.me.zhbj.uttils.MyLogger;
 import org.me.zhbj.view.RefreshRecyclerView;
 import org.me.zhbj.view.SimpleDividerItemDecoration;
 import org.me.zhbj.view.SwitchImageViewPager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -121,24 +124,36 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         return view;
     }
 
-    public void loadNetData(String url) {
+    public void loadNetData(final String url) {
         OkHttpUtils.get()
                 .url(url)
                 .build()
                 .execute(new StringCallback() {
                     @Override
                     public void onError(Call call, Exception e, int id) {
+                        try {
+                            String json = CacheUtils.readCache(context, url);
+                            if (!TextUtils.isEmpty(json)) {
+                                processData(json);
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        } catch (JSONException e1) {
+                            e1.printStackTrace();
+                        }
                         Toast.makeText(context, "加载数据失败", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-
                         //把response  == json 转换成对应的数据模型
                         MyLogger.i(TAG, response);
                         try {
                             processData(response);
+                            CacheUtils.saveCache(context, url, response);
                         } catch (JSONException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
 

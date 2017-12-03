@@ -105,6 +105,7 @@ public class NewsCenterTabFragment extends BaseFragment implements BaseLoadNetDa
     }
 
     public void processChannelData() {
+        hasLoadData = true;
         channel_name = Arrays.asList(getContext().getResources().getStringArray(R.array.news_channel_name));
         channel_id = Arrays.asList(getContext().getResources().getStringArray(R.array.news_channel_id));
 

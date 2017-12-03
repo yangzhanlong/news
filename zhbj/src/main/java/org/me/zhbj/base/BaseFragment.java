@@ -28,6 +28,9 @@ public abstract class BaseFragment extends Fragment {
     @BindView(R.id.container)
     public FrameLayout container;
 
+    // 是否已经加载数据
+    public boolean hasLoadData = false;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_tab_base, container, false);

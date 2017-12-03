@@ -105,6 +105,9 @@ public class MainActivity extends FragmentActivity implements RadioGroup.OnCheck
 
         // ViewPager 绑定 fragments
         tabVp.setAdapter(new MainVPFragmentAdapter(getSupportFragmentManager(), fragments));
+
+        // 让ViewPager缓存5个页面
+        tabVp.setOffscreenPageLimit(5);
     }
 
     // 点击底部的tab切换ViewPager的页面
@@ -137,7 +140,7 @@ public class MainActivity extends FragmentActivity implements RadioGroup.OnCheck
 
         //加载网络数据的入口
         BaseFragment baseFragment = (BaseFragment) fragments.get(item);
-        if (baseFragment instanceof BaseLoadNetDataOperator) {
+        if (baseFragment instanceof BaseLoadNetDataOperator && !baseFragment.hasLoadData) {
             ((BaseLoadNetDataOperator) baseFragment).loadNetData();
         }
     }
