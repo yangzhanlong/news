@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.text.TextUtils;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16,17 +16,15 @@ import com.squareup.picasso.Picasso;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.me.zhbj.R;
 import org.me.zhbj.adapter.NewsListAdapter;
 import org.me.zhbj.adapter.SwitchImageVPAdapter;
+import org.me.zhbj.api.ApiConstants;
 import org.me.zhbj.bean.NewsCenterTabBean;
 import org.me.zhbj.bean.NewsChannelContentBean;
 import org.me.zhbj.bean.NewsChannelDatasBean;
 import org.me.zhbj.fragment.NewsCenterTabFragment;
-import org.me.zhbj.uttils.Constant;
 import org.me.zhbj.uttils.MyLogger;
 import org.me.zhbj.view.RefreshRecyclerView;
 import org.me.zhbj.view.SimpleDividerItemDecoration;
@@ -35,6 +33,7 @@ import org.me.zhbj.view.SwitchImageViewPager;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import okhttp3.Call;
 
@@ -62,12 +61,16 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
     private NewsCenterTabFragment newsCenterTabFragment;
 
+    @BindView(R.id.rv_news)
+    RefreshRecyclerView rv_news;
+
     // 处理轮播图自动切换 (消息机制)
     private Handler mHandler = new Handler();
     // 判断是否在切换
     private boolean hasSwitch;
-    private RefreshRecyclerView rv_news;
+    //private RefreshRecyclerView rv_news;
     private NewsListAdapter adapter;
+    private ArrayList<String> mImagesUrls;
 
     // 切换任务
     private class SwitchTask implements Runnable {
@@ -112,9 +115,9 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     }
 
     private View initView() {
-        View view = View.inflate(context, R.layout.newscenter_content_tab, null);
-        rv_news = (RefreshRecyclerView) view.findViewById(R.id.rv_news);
-        ButterKnife.bind(view);
+        View view = LayoutInflater.from(context).inflate(R.layout.newscenter_content_tab, null);
+        //rv_news = (RefreshRecyclerView) view.findViewById(R.id.rv_news);
+        ButterKnife.bind(this, view);
         return view;
     }
 
@@ -130,13 +133,15 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
 
                     @Override
                     public void onResponse(String response, int id) {
-                        MyLogger.i(TAG, response);
+
                         //把response  == json 转换成对应的数据模型
+                        MyLogger.i(TAG, response);
                         try {
                             processData(response);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+
                     }
                 });
     }
@@ -179,7 +184,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         rv_news.setLayoutManager(new LinearLayoutManager(context));
         // 设置条目分割线
         rv_news.addItemDecoration(new SimpleDividerItemDecoration(context));
-        // 设置数据  RevyclerView Adapter  ViewHolder
+        // 设置数据  RecyclerView Adapter  ViewHolder
         adapter = new NewsListAdapter(context, newsChannelContentBean);
         rv_news.setAdapter(adapter);
         // 设置下拉刷新的监听
@@ -213,37 +218,35 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     private void initSwitchImageView() throws JSONException {
         imaeViews = new ArrayList<>();
         titles = new ArrayList<>();
-        Gson gson = new Gson();
-        String json = gson.toJson(newsChannelContentBean.result);
-        JSONObject jsonObject = new JSONObject(json);
-        JSONArray array =  jsonObject.getJSONArray("list");
 
         ArrayList<String> pics = new ArrayList<>();
-        for (int i = 0; i < array.length(); i++) {
+
+        for (int i = 0; i < newsChannelContentBean.data.size(); i++) {
             if (i == 3) {
                 break;
             }
 
-            String pic, title;
-            pic = (String) array.getJSONObject(i).get("pic");
-            title = (String) array.getJSONObject(i).get("title");
-
-            if (!TextUtils.isEmpty(pic)) {
-                pics.add(pic);
-                ImageView iv = new ImageView(context);
-                //iv.setScaleType(ImageView.ScaleType.FIT_XY);
-                iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                Picasso.with(context).load(pic).into(iv);
-                imaeViews.add(iv);
-                titles.add(title);
+            String pic = null, title;
+            title = newsChannelContentBean.data.get(i).title;
+            mImagesUrls = (ArrayList<String>) newsChannelContentBean.data.get(i).imageUrls;
+            if (mImagesUrls != null && mImagesUrls.size() != 0) {
+                pic = mImagesUrls.get(0);
             }
+
+            pics.add(pic);
+            ImageView iv = new ImageView(context);
+            //iv.setScaleType(ImageView.ScaleType.FIT_XY);
+            iv.setScaleType(ImageView.ScaleType.FIT_XY);
+            Picasso.with(context).load(pic).into(iv);
+            imaeViews.add(iv);
+            titles.add(title);
         }
 
         // 在轮播图的前后添加多一张图片 (实现无限循环)
         // 在开始添加一个页面
         {
             ImageView iv = new ImageView(context);
-            iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            iv.setScaleType(ImageView.ScaleType.FIT_XY);
             Picasso.with(context).load(pics.get(pics.size() - 1)).into(iv);
             imaeViews.add(0, iv);
         }
@@ -251,7 +254,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         // 在最后添加一个页面
         {
             ImageView iv = new ImageView(context);
-            iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            iv.setScaleType(ImageView.ScaleType.FIT_XY);
             Picasso.with(context).load(pics.get(0)).into(iv);
             imaeViews.add(imaeViews.size(), iv);
         }
@@ -259,6 +262,7 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
         // 设置适配器
         SwitchImageVPAdapter adapter = new SwitchImageVPAdapter(imaeViews);
         vpSwitchImage.setAdapter(adapter);
+
 
         tvTitle.setText(titles.get(0));
         vpSwitchImage.addOnPageChangeListener(this);
@@ -311,12 +315,12 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
     @Override
     public void onRefresh() {
         int position = newsCenterTabFragment.get_index_of_viewPager();
-        List<String> channelList = newsCenterTabFragment.newsChannelBean.result;
-        String url = Constant.NEWS_URL + "?channel="
-                + channelList.get(position)
-                + "&start=" + Constant.START
-                + "&num=" + Constant.NUM
-                + "&appkey=" + Constant.APPKEY;
+        List<String> channelId = newsCenterTabFragment.get_channel_id();
+
+        String url = ApiConstants.NEWS_HOST
+                + "?pageToken=" + ApiConstants.PAGE_TOKEN
+                + "&catid=" + channelId.get(position)
+                + "&apikey=" + ApiConstants.APIKEY;
 
         OkHttpUtils.get()
                 .url(url)
@@ -342,18 +346,17 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
                 });
     }
 
-    private int mStart = 0;
+    private int pageToken = 0;
     // 加载更多数据
     @Override
     public void onLoadMore() {
-        mStart += 10;
+        pageToken += 1;
         int position = newsCenterTabFragment.get_index_of_viewPager();
-        List<String> channelList = newsCenterTabFragment.newsChannelBean.result;
-        String url = Constant.NEWS_URL + "?channel="
-                + channelList.get(position)
-                + "&start=" + mStart
-                + "&num=" + Constant.NUM
-                + "&appkey=" + Constant.APPKEY;
+        List<String> channelId = newsCenterTabFragment.get_channel_id();
+        String url = ApiConstants.NEWS_HOST
+                + "?pageToken=" + pageToken
+                + "&catid=" + channelId.get(position)
+                + "&apikey=" + ApiConstants.APIKEY;
 
         OkHttpUtils.get()
                 .url(url)
@@ -362,23 +365,17 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
                     @Override
                     public void onError(Call call, Exception e, int id) {
                         Toast.makeText(context, "联网获取数据失败", Toast.LENGTH_SHORT).show();
-                        // 隐藏头
+                        // 隐藏脚
                         rv_news.hideFooterView();
                     }
 
                     @Override
                     public void onResponse(String response, int id) {
-                        try {
-                            Gson gson = new Gson();
-                            newsChannelContentBean = gson.fromJson(response, NewsChannelContentBean.class);
-                            String json = gson.toJson(newsChannelContentBean.result);
-                            JSONObject jsonObject = new JSONObject(json);
-                            JSONArray array = jsonObject.getJSONArray("list");
-                            adapter.addData(array);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        // 隐藏头
+                        Gson gson = new Gson();
+                        newsChannelContentBean = gson.fromJson(response, NewsChannelContentBean.class);
+                        adapter.addData(newsChannelContentBean.data);
+
+                        // 隐藏脚
                         rv_news.hideFooterView();
                     }
                 });

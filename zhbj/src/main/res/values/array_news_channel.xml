@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--新闻的可选频道-->
+    <string-array name="news_channel_name">
+        <item>要闻</item>
+        <item>娱乐</item>
+        <item>科技</item>
+        <item>国际</item>
+        <item>时尚</item>
+        <item>文化</item>
+        <item>游戏</item>
+        <item>政务</item>
+        <item>数码</item>
+        <item>电影</item>
+    </string-array>
+
+    <string-array name="news_channel_id">
+        <item>news_news_top</item>
+        <item>news_news_ent</item>
+        <item>news_news_tech</item>
+        <item>news_news_world</item>
+        <item>news_news_lad</item>
+        <item>news_news_cul</item>
+        <item>news_news_game</item>
+        <item>news_news_msh</item>
+        <item>news_news_digi</item>
+        <item>news_news_movie</item>
+    </string-array>
+</resources>

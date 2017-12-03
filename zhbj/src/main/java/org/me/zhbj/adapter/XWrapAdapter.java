@@ -33,10 +33,10 @@ public class XWrapAdapter extends RecyclerView.Adapter {
         }
 
         // 正常的布局
-        int adjPoisition = position - 1;
+        int adjPosition = position - 1;
         int adapterCount = mAdapter.getItemCount();
-        if (adjPoisition < adapterCount) {
-            return mAdapter.getItemViewType(adjPoisition);
+        if (adjPosition < adapterCount) {
+            return mAdapter.getItemViewType(adjPosition);
         }
 
         // 脚
@@ -67,7 +67,7 @@ public class XWrapAdapter extends RecyclerView.Adapter {
         int adjPosition = position -1;
         int adapterCount = mAdapter.getItemCount();
         if (adjPosition < adapterCount) {
-            mAdapter.onBindViewHolder(holder, position);
+            mAdapter.onBindViewHolder(holder, adjPosition);
         }
     }
 

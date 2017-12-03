@@ -100,7 +100,7 @@ public class RefreshRecyclerView extends RecyclerView {
 
     // 初始化头
     private void initHeaderView() {
-        mHeaderView = (ViewGroup) inflate(getContext(), R.layout.header, null);
+        mHeaderView = (ViewGroup) View.inflate(getContext(), R.layout.header, null);
         ButterKnife.bind(this, mHeaderView);
         // 隐藏进度条
         pb.setVisibility(View.INVISIBLE);
@@ -155,7 +155,7 @@ public class RefreshRecyclerView extends RecyclerView {
     private int diaY;
 
     // 分发事件
-    // 没有用 onTouchEvent，因为 dispatchTouchEvent 回答的频率高一些
+    // 没有用 onTouchEvent，因为 dispatchTouchEvent 回调的频率高一些
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
@@ -235,7 +235,7 @@ public class RefreshRecyclerView extends RecyclerView {
     }
 
     private boolean hasLoadMoreData = false;
-    //滑动状态改变 (实现下拉加载)
+    //滑动状态改变 (实现上拉加载)
     @Override
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);
@@ -258,7 +258,7 @@ public class RefreshRecyclerView extends RecyclerView {
             mFootview.setPadding(0, 0, 0, 0);
             // 滑动到显示的脚的位置
             smoothScrollToPosition(lastVisibleItemPosition);
-            // 加载数据
+
             mOnLoadMoreListener.onLoadMore();
         }
 
