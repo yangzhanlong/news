@@ -1,6 +1,7 @@
 package org.me.zhbj.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import org.me.zhbj.R;
+import org.me.zhbj.activity.NewsDetailActivity;
 import org.me.zhbj.bean.NewsChannelContentBean;
 
 import java.util.List;
@@ -52,6 +54,16 @@ public class NewsListAdapter extends RecyclerView.Adapter {
         Picasso.with(context).load(pic).into(viewHolder.ivIcon);
         viewHolder.tvTitle.setText(newsChannelDataBean.title);
         viewHolder.tvTime.setText(newsChannelDataBean.publishDateStr);
+
+        // 设置条目的点击事件
+        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, NewsDetailActivity.class);
+                intent.putExtra("url", newsChannelDataBean.url);
+                context.startActivity(intent);
+            }
+        });
     }
 
     @Override
