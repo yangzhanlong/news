@@ -9,13 +9,12 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
 import org.me.zhbj.R;
 import org.me.zhbj.activity.NewsDetailActivity;
 import org.me.zhbj.bean.NewsChannelContentBean;
 import org.me.zhbj.uttils.Constant;
 import org.me.zhbj.uttils.SPUtils;
+import org.me.zhbj.uttils.bitmap.BitmapUtils;
 
 import java.util.List;
 
@@ -54,7 +53,8 @@ public class NewsListAdapter extends RecyclerView.Adapter {
         }
 
         final ViewHolder viewHolder = (ViewHolder) holder;
-        Picasso.with(context).load(pic).into(viewHolder.ivIcon);
+        //Picasso.with(context).load(pic).into(viewHolder.ivIcon);
+        BitmapUtils.display(viewHolder.ivIcon, pic);
         viewHolder.tvTitle.setText(newsChannelDataBean.title);
         viewHolder.tvTime.setText(newsChannelDataBean.publishDateStr);
 
