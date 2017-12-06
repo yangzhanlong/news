@@ -9,6 +9,9 @@ public class Constant {
     // 是否已经执行完向导
     public final static String KEY_HAS_GUIDE = "key_has_guide";
 
+    // 是否已经阅读新闻条目
+    public final static String KEY_HAS_READ = "key_has_read";
+
     //服务器的主机
     public final static String HOST = "http://139.162.86.113:8080";
 

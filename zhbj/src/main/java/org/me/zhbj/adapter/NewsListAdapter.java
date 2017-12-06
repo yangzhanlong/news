@@ -2,6 +2,7 @@ package org.me.zhbj.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,8 @@ import com.squareup.picasso.Picasso;
 import org.me.zhbj.R;
 import org.me.zhbj.activity.NewsDetailActivity;
 import org.me.zhbj.bean.NewsChannelContentBean;
+import org.me.zhbj.uttils.Constant;
+import org.me.zhbj.uttils.SPUtils;
 
 import java.util.List;
 
@@ -55,6 +58,14 @@ public class NewsListAdapter extends RecyclerView.Adapter {
         viewHolder.tvTitle.setText(newsChannelDataBean.title);
         viewHolder.tvTime.setText(newsChannelDataBean.publishDateStr);
 
+        // 判断条目是否已经阅读
+        String readNews = SPUtils.getString(context, Constant.KEY_HAS_READ, "");
+        if (readNews.contains(newsChannelDataBean.id)) {
+            viewHolder.tvTitle.setTextColor(Color.GRAY);
+        } else {
+            viewHolder.tvTitle.setTextColor(Color.BLACK);
+        }
+
         // 设置条目的点击事件
         viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,6 +73,18 @@ public class NewsListAdapter extends RecyclerView.Adapter {
                 Intent intent = new Intent(context, NewsDetailActivity.class);
                 intent.putExtra("url", newsChannelDataBean.url);
                 context.startActivity(intent);
+
+                // 新闻条目的唯一标识
+                String id = newsChannelDataBean.id;
+                // 存储id (SP, file, DB)
+                String readNews = SPUtils.getString(context, Constant.KEY_HAS_READ, "");
+                if (!readNews.contains(id)) {
+                    String value = readNews + "," + id;
+                    SPUtils.saveString(context, Constant.KEY_HAS_READ, value);
+
+                    // 把条目变成灰色
+                    viewHolder.tvTitle.setTextColor(Color.GRAY);
+                }
             }
         });
     }
