@@ -346,6 +346,8 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
                         Toast.makeText(context, "联网获取数据失败", Toast.LENGTH_SHORT).show();
                         // 隐藏头
                         rv_news.hideHeaderView(false);
+                        // 让轮播图继续切换
+                        startSwitch();
                     }
 
                     @Override
@@ -357,6 +359,8 @@ public class NewsCenterContentTabPager implements ViewPager.OnPageChangeListener
                         }
                         // 隐藏头
                         rv_news.hideHeaderView(true);
+                        // 让轮播图继续切换
+                        startSwitch();
                     }
                 });
     }
