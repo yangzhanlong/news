@@ -14,6 +14,7 @@ import android.widget.RelativeLayout.LayoutParams;
 import org.me.zhbj.R;
 import org.me.zhbj.adapter.GuideVPAdapter;
 import org.me.zhbj.uttils.Constant;
+import org.me.zhbj.uttils.Dp2PxUtils;
 import org.me.zhbj.uttils.SPUtils;
 
 import java.util.ArrayList;
@@ -56,7 +57,11 @@ public class GuideActivity extends AppCompatActivity implements ViewPager.OnPage
         for (int resId : imgs) {
             View view = new View(this);
             view.setBackgroundResource(R.drawable.point_gray_bg);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(30, 30);
+            //LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(30, 30);
+            // 原因：布局中红色点的单位:dp, java代码中：px
+            // dp 转 px
+            int width = Dp2PxUtils.db2px(this, 10);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width, width);
             params.rightMargin = 50; // 设置右边距
             containerGrayPoint.addView(view, params);
         }
