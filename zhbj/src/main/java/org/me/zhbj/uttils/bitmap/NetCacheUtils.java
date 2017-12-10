@@ -1,5 +1,6 @@
 package org.me.zhbj.uttils.bitmap;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -16,9 +17,11 @@ import java.net.URL;
  */
 
 public class NetCacheUtils {
+    private Context context;
 
     // 从网络获取图片
-    public void getBitmapFromNet(ImageView iv, String url) {
+    public void getBitmapFromNet(Context context, ImageView iv, String url) {
+        this.context = context;
         // 让ImageView 和 url关联起来
         iv.setTag(url);
 
@@ -46,6 +49,8 @@ public class NetCacheUtils {
             String url = (String) iv.getTag();
             if (bitmap != null && mUrl.equals(url)) {
                 iv.setImageBitmap(bitmap);
+                // 磁盘缓存
+                LocalCacheUtils.saveBitmapCache(context, bitmap, mUrl);
             }
         }
     }

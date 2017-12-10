@@ -46,15 +46,15 @@ public class NewsListAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         String pic = null;
 
+        final ViewHolder viewHolder = (ViewHolder) holder;
         final NewsChannelContentBean.NewsChannelDataBean newsChannelDataBean = newsChannelContentBean.data.get(position);
         List<String> images = newsChannelDataBean.imageUrls;
         if (images != null && images.size() != 0) {
             pic = images.get(0);
+            BitmapUtils.display(context, viewHolder.ivIcon, pic);
+            //Picasso.with(context).load(pic).into(viewHolder.ivIcon);
         }
 
-        final ViewHolder viewHolder = (ViewHolder) holder;
-        //Picasso.with(context).load(pic).into(viewHolder.ivIcon);
-        BitmapUtils.display(viewHolder.ivIcon, pic);
         viewHolder.tvTitle.setText(newsChannelDataBean.title);
         viewHolder.tvTime.setText(newsChannelDataBean.publishDateStr);
 
