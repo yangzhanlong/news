@@ -18,17 +18,26 @@ public class BitmapUtils {
     static {
         netCacheUtils = new NetCacheUtils();
         localCacheUtils = new LocalCacheUtils();
+        memoryCacheUtils = new MemoryCacheUtils();
     }
 
     private static NetCacheUtils netCacheUtils;
     private static LocalCacheUtils localCacheUtils;
+    private static MemoryCacheUtils memoryCacheUtils;
 
     // 显示图片
     public static void display(Context context, ImageView iv, String url) {
+        Bitmap bitmap = null;
         // 内存缓存
+        bitmap = MemoryCacheUtils.readBitmapCache(url);
+        if (bitmap != null) {
+            iv.setImageBitmap(bitmap);
+            MyLogger.i(TAG, "从内存获取图片");
+            return;
+        }
 
         // 磁盘缓存
-        Bitmap bitmap = localCacheUtils.readBitmapCache(context, url);
+        bitmap = localCacheUtils.readBitmapCache(context, url);
         if (bitmap != null) {
             iv.setImageBitmap(bitmap);
             MyLogger.i(TAG, "从磁盘获取图片");

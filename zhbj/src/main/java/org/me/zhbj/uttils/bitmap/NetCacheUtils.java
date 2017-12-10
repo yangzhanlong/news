@@ -51,6 +51,8 @@ public class NetCacheUtils {
                 iv.setImageBitmap(bitmap);
                 // 磁盘缓存
                 LocalCacheUtils.saveBitmapCache(context, bitmap, mUrl);
+                // 内存缓存
+                MemoryCacheUtils.saveBitmapCache(bitmap, mUrl);
             }
         }
     }

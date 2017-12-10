@@ -51,6 +51,9 @@ public class LocalCacheUtils {
         }
 
         Bitmap bitmap  = BitmapFactory.decodeFile(file.getAbsolutePath());
+
+        // 把图片缓存在内存中
+        MemoryCacheUtils.saveBitmapCache(bitmap, url);
         return bitmap;
     }
 }
